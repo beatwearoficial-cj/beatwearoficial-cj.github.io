@@ -159,6 +159,8 @@
   <input type="password" id="loginPass" autocomplete="current-password" placeholder="••••••••">
   <button class="btn-primario" id="btnLogin">Entrar</button>
   <div id="errorLogin"></div>
+  <button class="btn-secundario btn-chico" id="btnOlvide" style="width:100%;margin-top:14px;">¿Olvidaste tu contraseña?</button>
+  <div id="msgOlvide" class="msg"></div>
 </div>
 
 <!-- ============ PANEL ADMIN ============ -->
@@ -225,7 +227,7 @@
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
   import {
-    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail
   } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
   import {
     getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
@@ -257,6 +259,26 @@
   });
 
   document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+
+  document.getElementById('btnOlvide').addEventListener('click', async () => {
+    const msgOlvide = document.getElementById('msgOlvide');
+    msgOlvide.className = 'msg';
+    const email = document.getElementById('loginEmail').value.trim();
+    if (!email) {
+      msgOlvide.textContent = 'Primero escribe tu correo arriba, luego dale clic aquí.';
+      msgOlvide.classList.add('error');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      msgOlvide.textContent = 'Te enviamos un correo a ' + email + ' con un enlace para poner una nueva contraseña. Revisa también spam.';
+      msgOlvide.classList.add('ok');
+    } catch (e) {
+      console.error(e);
+      msgOlvide.textContent = 'No se pudo enviar el correo. Verifica que el correo esté escrito correctamente.';
+      msgOlvide.classList.add('error');
+    }
+  });
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
